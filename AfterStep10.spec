@@ -21,10 +21,20 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %description 
 This is old 1.0 version of AfterStep Window Manager. AfterStep is a
 continuation of the BowMan WM. It uses modified FVWM code to bring you
-a very NeXTStep-ish experience in X Windows. However, it doesn't stop
-there, and can be extended beyond just being a simple NeXTStep clone.
+a very NeXTStep-ish experience in X Window System. However, it doesn't
+stop there, and can be extended beyond just being a simple NeXTStep
+clone.
 
 This version includes Rob Malda's cool3.diff
+
+%description -l pl
+To jest stara wersja 1.0 zarz±dcy okien AfterStep. AfterStep jest
+kontynuacj± BowMan WM. U¿ywa zmodyfikowanego kodu FVWM aby dotarczyæ
+Ci odczucia podobne do NeXTStepa pod X Window System. To nie wszystko
+- AfterStep mo¿e byæ rozszerzony, aby byæ czym¶ wiêcej ni¿ prostym
+klonem NeXTStepa.
+
+Ta wersja zawiera cool3.diff Roba Maldy.
 
 %prep
 %setup -q -n AfterStep-%{version}

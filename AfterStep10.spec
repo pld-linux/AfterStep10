@@ -1,4 +1,5 @@
 Summary:	Old version of AfterStep Window Manager (NeXTalike)
+Summary(pl):	Stara wersja zarz±dcy okien AfterStep
 Name:		AfterStep10
 Version:	1.0
 Release:	1
@@ -34,31 +35,28 @@ This version includes Rob Malda's cool3.diff
 
 %build
 ./MakeMakefiles
-%{__make} CDEBUGFLAGS="$RPM_OPT_FLAGS" all
+%{__make} CDEBUGFLAGS="%{rpmcflags}" all
 
 %install
 rm -rf $RPM_BUILD_ROOT
 
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_mandir}/man1,%{_datadir}} \
-$RPM_BUILD_ROOT%{_sysconfdir}/X11/ \
-   	   $RPM_BUILD_ROOT/%{_datadir}/%{afterstep}/{pixmaps,backgrounds}
+	$RPM_BUILD_ROOT%{_sysconfdir}/X11 \
+	$RPM_BUILD_ROOT/%{_datadir}/%{afterstep}/{pixmaps,backgrounds}
 
-install -s afterstep/afterstep $RPM_BUILD_ROOT%{_bindir}/%{afterstep}
+install afterstep/afterstep $RPM_BUILD_ROOT%{_bindir}/%{afterstep}
 install afterstep/afterstep.man $RPM_BUILD_ROOT%{_mandir}/man1/%{afterstep}.1x
 
 AS_MODULES="Wharf Pager asclock"
 
 for m in $AS_MODULES; do 
-    install -s modules/$m/$m $RPM_BUILD_ROOT%{_bindir}/as10-$m
+    install modules/$m/$m $RPM_BUILD_ROOT%{_bindir}/as10-$m
     install modules/$m/$m.man $RPM_BUILD_ROOT%{_mandir}/man1/as10-$m.1x
 done
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/X11/%{afterstep}.rc
 
-install -d $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/pixmaps
 install icons/*.xpm $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/pixmaps
-
-install -d $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/backgrounds
 install backgrounds/* $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/backgrounds
 
 gzip -9nf CHANGES CREDITS FAQ README README.8bit module-interface.txt
@@ -71,5 +69,5 @@ rm -rf $RPM_BUILD_ROOT
 %doc *.gz
 %config %{_sysconfdir}/X11/%{afterstep}.rc
 %attr(755,root,root) %{_bindir}/*
-%{_mandir}/man1/*.gz
+%{_mandir}/man1/*
 %{_datadir}/%{afterstep}

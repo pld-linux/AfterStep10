@@ -4,13 +4,13 @@ Name:		AfterStep10
 Version:	1.0
 Release:	1
 License:	GPL
+Group:		X11/Window Managers
 Source0:	ftp://ftp.afterstep.org/archives/1.0/AfterStep-%{version}.tar.gz
 # Source0-md5:	2c56247e1914e25a455df3c8d03b0663
 Source1:	%{name}-system.steprc
 Patch0:		%{name}-linux_alpha.patch
 Patch1:		%{name}-cool3.patch
 URL:		http://www.afterstep.org/
-Group:		X11/Window Managers
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define         afterstep       afterstep10
@@ -46,10 +46,9 @@ Ta wersja zawiera cool3.diff Roba Maldy.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-
 install -d $RPM_BUILD_ROOT{%{_bindir},%{_mandir}/man1,%{_datadir}} \
 	$RPM_BUILD_ROOT%{_sysconfdir}/X11 \
-	$RPM_BUILD_ROOT/%{_datadir}/%{afterstep}/{pixmaps,backgrounds}
+	$RPM_BUILD_ROOT%{_datadir}/%{afterstep}/{pixmaps,backgrounds}
 
 install afterstep/afterstep $RPM_BUILD_ROOT%{_bindir}/%{afterstep}
 install afterstep/afterstep.man $RPM_BUILD_ROOT%{_mandir}/man1/%{afterstep}.1x

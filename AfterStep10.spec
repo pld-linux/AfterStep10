@@ -10,10 +10,6 @@ Patch0:		%{name}-linux_alpha.patch
 Patch1:		%{name}-cool3.patch
 URL:		http://www.afterstep.org/
 Group:		X11/Window Managers
-Group(de):	X11/Fenstermanager
-Group(es):	X11/Administraadores De Ventanas
-Group(fr):	X11/Gestionnaires De Fenêtres
-Group(pl):	X11/Zarz±dcy Okien
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_prefix		/usr/X11R6

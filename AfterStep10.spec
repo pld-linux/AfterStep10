@@ -8,6 +8,7 @@ Group:		X11/Window Managers
 Source0:	ftp://ftp.afterstep.org/archives/1.0/AfterStep-%{version}.tar.gz
 # Source0-md5:	2c56247e1914e25a455df3c8d03b0663
 Source1:	%{name}-system.steprc
+Source2:	AfterStep-xsession.desktop
 Patch0:		%{name}-linux_alpha.patch
 Patch1:		%{name}-cool3.patch
 URL:		http://www.afterstep.org/
@@ -46,8 +47,9 @@ Ta wersja zawiera cool3.diff Roba Maldy.
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT{%{_bindir},%{_mandir}/man1,%{_datadir}} \
+install -d \
 	$RPM_BUILD_ROOT%{_sysconfdir}/X11 \
+	$RPM_BUILD_ROOT{%{_bindir},%{_datadir}/xsessions,%{_mandir}/man1} \
 	$RPM_BUILD_ROOT%{_datadir}/%{afterstep}/{pixmaps,backgrounds}
 
 install afterstep/afterstep $RPM_BUILD_ROOT%{_bindir}/%{afterstep}
@@ -61,6 +63,7 @@ for m in $AS_MODULES; do
 done
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/X11/%{afterstep}.rc
+install %{SOURCE2} $RPM_BUILD_ROOT%{_datadir}/xsessions/AfterStep.desktop
 
 install icons/*.xpm $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/pixmaps
 install backgrounds/* $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/backgrounds
@@ -75,3 +78,4 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/*
 %{_mandir}/man1/*
 %{_datadir}/%{afterstep}
+%{_datadir}/xsessions/AfterStep.desktop

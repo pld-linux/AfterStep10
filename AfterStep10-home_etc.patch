@@ -1,0 +1,19 @@
+--- AfterStep-1.0/afterstep/configure.c.orig	Mon Sep 29 20:41:52 2003
++++ AfterStep-1.0/afterstep/configure.c	Mon Sep 29 20:44:20 2003
+@@ -459,6 +459,7 @@
+   char *home_file;
+   char line[256],*tline;
+   char *Home;			/* the HOME environment variable */
++  char *home_etc = getenv("HOME_ETC");
+   int HomeLen;			/* length of Home */
+ #ifdef ENABLE_TEXTURE
+   int icol, mcol, ucol, tcol, scol;	/* texture colors */
+@@ -492,7 +493,7 @@
+   Scr.DefaultIcon = NULL;
+ 
+   /* find the home directory to look in */
+-  Home = getenv("HOME");
++  Home = home_etc ? home_etc : getenv("HOME");
+   if (Home == NULL)
+     Home = "./";
+   HomeLen = strlen(Home);

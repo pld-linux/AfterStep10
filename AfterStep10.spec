@@ -5,6 +5,7 @@ Version:	1.0
 Release:	1
 License:	GPL
 Source0:	ftp://ftp.afterstep.org/archives/1.0/AfterStep-%{version}.tar.gz
+# Source0-md5:	2c56247e1914e25a455df3c8d03b0663
 Source1:	%{name}-system.steprc
 Patch0:		%{name}-linux_alpha.patch
 Patch1:		%{name}-cool3.patch

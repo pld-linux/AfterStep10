@@ -16,7 +16,7 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_mandir		%{_prefix}/man
 %define         afterstep       afterstep10
 
-%description 
+%description
 This is old 1.0 version of AfterStep Window Manager. AfterStep is a
 continuation of the BowMan WM. It uses modified FVWM code to bring you
 a very NeXTStep-ish experience in X Window System. However, it doesn't
@@ -28,8 +28,8 @@ This version includes Rob Malda's cool3.diff
 %description -l pl
 To jest stara wersja 1.0 zarz±dcy okien AfterStep. AfterStep jest
 kontynuacj± BowMan WM. U¿ywa zmodyfikowanego kodu FVWM aby dotarczyæ
-Ci odczucia podobne do NeXTStepa pod X Window System. To nie wszystko
-- AfterStep mo¿e byæ rozszerzony, aby byæ czym¶ wiêcej ni¿ prostym
+Ci odczucia podobne do NeXTStepa pod X Window System. To nie wszystko.
+AfterStep mo¿e byæ rozszerzony, aby byæ czym¶ wiêcej ni¿ prostym
 klonem NeXTStepa.
 
 Ta wersja zawiera cool3.diff Roba Maldy.
@@ -57,7 +57,7 @@ install afterstep/afterstep.man $RPM_BUILD_ROOT%{_mandir}/man1/%{afterstep}.1x
 
 AS_MODULES="Wharf Pager asclock"
 
-for m in $AS_MODULES; do 
+for m in $AS_MODULES; do
     install modules/$m/$m $RPM_BUILD_ROOT%{_bindir}/as10-$m
     install modules/$m/$m.man $RPM_BUILD_ROOT%{_mandir}/man1/as10-$m.1x
 done

@@ -15,7 +15,7 @@ Patch2:		%{name}-home_etc.patch
 URL:		http://www.afterstep.org/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define         afterstep       afterstep10
+%define		afterstep	afterstep10
 
 %description
 This is old 1.0 version of AfterStep Window Manager. AfterStep is a
@@ -60,8 +60,8 @@ install afterstep/afterstep.man $RPM_BUILD_ROOT%{_mandir}/man1/%{afterstep}.1x
 AS_MODULES="Wharf Pager asclock"
 
 for m in $AS_MODULES; do
-    install modules/$m/$m $RPM_BUILD_ROOT%{_bindir}/as10-$m
-    install modules/$m/$m.man $RPM_BUILD_ROOT%{_mandir}/man1/as10-$m.1x
+	install modules/$m/$m $RPM_BUILD_ROOT%{_bindir}/as10-$m
+	install modules/$m/$m.man $RPM_BUILD_ROOT%{_mandir}/man1/as10-$m.1x
 done
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/X11/%{afterstep}.rc

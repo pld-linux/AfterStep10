@@ -27,7 +27,7 @@ This version includes Rob Malda's cool3.diff
 
 %description -l pl
 To jest stara wersja 1.0 zarz±dcy okien AfterStep. AfterStep jest
-kontynuacj± BowMan WM. U¿ywa zmodyfikowanego kodu FVWM aby dotarczyæ
+kontynuacj± BowMan WM. U¿ywa zmodyfikowanego kodu FVWM aby dostarczyæ
 Ci odczucia podobne do NeXTStepa pod X Window System. To nie wszystko.
 AfterStep mo¿e byæ rozszerzony, aby byæ czym¶ wiêcej ni¿ prostym
 klonem NeXTStepa.

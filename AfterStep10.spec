@@ -11,6 +11,7 @@ Source1:	%{name}-system.steprc
 Source2:	AfterStep-xsession.desktop
 Patch0:		%{name}-linux_alpha.patch
 Patch1:		%{name}-cool3.patch
+Patch2:		%{name}-home_etc.patch
 URL:		http://www.afterstep.org/
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -40,6 +41,7 @@ Ta wersja zawiera cool3.diff Roba Maldy.
 %patch0
 %endif
 %patch1 -R -p5
+%patch2 -p1
 
 %build
 ./MakeMakefiles

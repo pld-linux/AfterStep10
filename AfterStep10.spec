@@ -12,8 +12,6 @@ URL:		http://www.afterstep.org/
 Group:		X11/Window Managers
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_prefix		/usr/X11R6
-%define		_mandir		%{_prefix}/man
 %define         afterstep       afterstep10
 
 %description

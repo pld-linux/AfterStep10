@@ -44,13 +44,13 @@ $RPM_BUILD_ROOT%{_sysconfdir}/X11/ \
    	   $RPM_BUILD_ROOT/%{_datadir}/%{afterstep}/{pixmaps,backgrounds}
 
 install -s afterstep/afterstep $RPM_BUILD_ROOT%{_bindir}/%{afterstep}
-gzip -9nf afterstep/afterstep.man > $RPM_BUILD_ROOT%{_mandir}/man1/%{afterstep}.1x.gz
+install afterstep/afterstep.man $RPM_BUILD_ROOT%{_mandir}/man1/%{afterstep}.1x
 
 AS_MODULES="Wharf Pager asclock"
 
 for m in $AS_MODULES; do 
     install -s modules/$m/$m $RPM_BUILD_ROOT%{_bindir}/as10-$m
-    gzip -9nf modules/$m/$m.man > $RPM_BUILD_ROOT%{_mandir}/man1/as10-$m.1x.gz
+    install modules/$m/$m.man $RPM_BUILD_ROOT%{_mandir}/man1/as10-$m.1x
 done
 
 install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/X11/%{afterstep}.rc
@@ -61,12 +61,14 @@ install icons/*.xpm $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/pixmaps
 install -d $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/backgrounds
 install backgrounds/* $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/backgrounds
 
+gzip -9nf CHANGES CREDITS FAQ README README.8bit module-interface.txt
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc CHANGES CREDITS FAQ README README.8bit module-interface.txt
+%doc *.gz
 %config %{_sysconfdir}/X11/%{afterstep}.rc
 %attr(755,root,root) %{_bindir}/*
 %{_mandir}/man1/*.gz

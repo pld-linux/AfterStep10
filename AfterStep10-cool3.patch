@@ -1,0 +1,2025 @@
+Only in .: Makefile
+diff -u ./afterstep.c /home/malda/code/AfterStep-1.0/afterstep/afterstep.c
+--- ./afterstep.c	Wed May 14 17:38:24 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/afterstep.c	Sun May  4 11:19:57 1997
+@@ -164,11 +164,6 @@
+     Bool single = False;
+     Bool option_error = FALSE;
+ 
+-
+-    Scr.ButtonType=0;
+-    Scr.TitleTextType=0;
+-    Scr.TitleTextY=0;
+-
+ #ifdef M4
+     /* Set the defaults for m4 processing */
+      
+diff -u ./borders.c /home/malda/code/AfterStep-1.0/afterstep/borders.c
+--- ./borders.c	Thu May 15 01:18:03 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/borders.c	Thu Mar 20 19:09:21 1997
+@@ -186,7 +186,6 @@
+ {
+   Window w=None;
+   int y, i, x;
+-  int z=0;
+   GC ReliefGC,ShadowGC;
+   GC HReliefGC,HShadowGC;
+   Pixel BorderColor,BackColor;
+@@ -359,33 +358,16 @@
+ 	   (expose_win==t->right_w[i]) ||
+ 	   (expose_win == None)) {
+ 
+-          if(Scr.ButtonType==0){ RelieveWindow(t,t->right_w[i],0,0,t->button_height,
+-                        t->button_height,
+-                        (PressedW==t->right_w[i]?ShadowGC:ReliefGC),
+-                        (PressedW==t->right_w[i]?ReliefGC:ShadowGC),
+-                        BOTTOM_HILITE|RIGHT_HILITE); z=2; }  
+-
+-
++	  RelieveWindow(t,t->right_w[i],0,0,t->button_height,
++			t->button_height,
++			(PressedW==t->right_w[i]?ShadowGC:ReliefGC), 
++			(PressedW==t->right_w[i]?ReliefGC:ShadowGC), 
++			BOTTOM_HILITE|RIGHT_HILITE);
+ 	  switch (Scr.button_style[(i*2+2)%10]) {
+ 	  case XPM_BUTTON_STYLE:
+-	     if((PressedW==t->right_w[i])&&(Scr.ButtonType==1))
+-                {  /* Pressed! */
+-                XShapeCombineMask(dpy, t->right_w[i], ShapeBounding, 0, 0,
+-                                  Scr.dbutton_pixmap_mask[(i*2+2)%10], ShapeSet);
+-                XCopyArea(dpy, Scr.dbutton_pixmap[(i*2+2)%10], t->right_w[i],
+-                              Scr.MaskGC, 0, 0, Scr.button_width[(i*2+2)%10],
+-                              Scr.button_height[(i*2+2)%10], z, z);
+-
+-                }
+-            else  /* Not Pressed */
+-                {
+-                  if(Scr.ButtonType==1) XShapeCombineMask(dpy, t->right_w[i], ShapeBounding, 0, 0,
+-                                 Scr.button_pixmap_mask[(i*2+2)%10], ShapeSet);
+-                  XCopyArea(dpy, Scr.button_pixmap[(i*2+2)%10], t->right_w[i],
+-                              Scr.MaskGC, 0, 0, Scr.button_width[(i*2+2)%10],
+-                              Scr.button_height[(i*2+2)%10], z, z);
+-
+-                }            
++	    XCopyArea(dpy, Scr.button_pixmap[(i*2+2)%10], t->right_w[i],
++		      Scr.LineGC, 0, 0, Scr.button_width[(i*2+2)%10],
++		      Scr.button_height[(i*2+2)%10], 2, 2);
+ 	    break;
+ 	  default:
+ 	    afterstep_err( "old button styles should not be used\n",NULL,NULL,NULL);
+@@ -400,27 +382,37 @@
+   if(t->flags & BORDER )
+     {
+       /* draw relief lines */
+-      GC rgc,sgc;
+-
+-      rgc = onoroff?Scr.HiReliefGC:Scr.StdReliefGC;
+-      sgc = onoroff?Scr.HiShadowGC:Scr.StdShadowGC;    
+-
+-      y = t->frame_height - 2*t->corner_width;
+-      x = t->frame_width -  2*t->corner_width +t->bw;
+-      SetBottomBackground(t, onoroff);
+ 
+-      RelieveWindow(t,t->side,0,0,x,t->boundary_height,
+-			rgc, sgc, 0x0004);
++        y = t->frame_height - 2*t->corner_width;
++        x = t->frame_width -  2*t->corner_width +t->bw;
++	SetBottomBackground(t, onoroff);
++	/*
++      if((flush_expose (t->side))||(expose_win == t->side)||
++	     (expose_win == None)) {*/
++
++	  RelieveWindow(t,t->side,0,0,x,t->boundary_height,
++			HReliefGC, HShadowGC, 0x0004);
++	/* } */
+       for(i=0;i<2;i++)
+ 	{
+-	      RelieveWindow(t,t->corners[i],0,0,t->corner_width,
++	    /*
++	  if((flush_expose(t->corners[i]))||(expose_win==t->corners[i])||
++	     (expose_win == None))
++	    {*/
++	      GC rgc,sgc;
++	      
++	      rgc = HReliefGC;
++	      sgc = HShadowGC;
++
++		RelieveWindow(t,t->corners[i],0,0,t->corner_width,
+ 			      t->corner_width+t->bw,
+ 			      rgc,sgc, corners[i]);
+ 		 
+ 	      if(t->boundary_height > 1)
+-		RelieveParts(t,i,rgc,sgc);
++		RelieveParts(t,i,rgc,i?rgc:sgc);
+ 	      else
+-                RelieveParts(t,i,rgc,sgc);
++		RelieveParts(t,i,sgc,i?sgc:sgc);
++	   /* } */
+ 	}
+     }
+   else      /* no decorative border */
+@@ -641,64 +633,9 @@
+ 		DrawTexturedText(dpy,t->title_w,Scr.WindowFont.font,hor_off,
+ 				 4,Scr.TitleGradient, t->name, strlen(t->name));
+ 	    } else {
+-
+-             if(Scr.TitleTextType==1){
+-	       if(onoroff)
+-	         { /* If on, check */
+-                 tGC      = PressedW==t->title_w?Scr.HiFontReliefGC:Scr.HiFontGC;
+-                 ReliefGC = PressedW==t->title_w?Scr.HiFontShadowGC:Scr.HiFontReliefGC;
+-                 ShadowGC = PressedW==t->title_w?Scr.HiFontGC:Scr.HiFontShadowGC; 
+-                 
+-		 }
+-	       else
+-                 { /* If Off, then just use Lo */
+-                 ReliefGC=Scr.LoFontReliefGC;
+-		 ShadowGC=Scr.LoFontShadowGC;
+-                 tGC=Scr.LoFontGC;
+-		 }
+-
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off,   Scr.WindowFont.y+Scr.TitleTextY,  t->name, strlen(t->name)); 
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off+1,  Scr.WindowFont.y+Scr.TitleTextY,  t->name, strlen(t->name));
+- 	       XDrawString (dpy, t->title_w,ReliefGC,hor_off+2,  Scr.WindowFont.y+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off+3,  Scr.WindowFont.y+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off+4,  Scr.WindowFont.y+Scr.TitleTextY,  t->name, strlen(t->name));
+-
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off,  Scr.WindowFont.y+1+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off,  Scr.WindowFont.y+2+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off,  Scr.WindowFont.y+3+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ReliefGC,hor_off,  Scr.WindowFont.y+4+Scr.TitleTextY,  t->name, strlen(t->name));
+-	
+-	       XDrawString (dpy, t->title_w,ShadowGC,hor_off+4,Scr.WindowFont.y+2+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ShadowGC,hor_off+4,Scr.WindowFont.y+3+Scr.TitleTextY,  t->name, strlen(t->name));
+-
+-	       XDrawString (dpy, t->title_w,ShadowGC,hor_off+4,Scr.WindowFont.y+4+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ShadowGC,hor_off+3,Scr.WindowFont.y+4+Scr.TitleTextY,  t->name, strlen(t->name));
+-	       XDrawString (dpy, t->title_w,ShadowGC,hor_off+2,Scr.WindowFont.y+4+Scr.TitleTextY,  t->name, strlen(t->name));
+-		
+-	       XDrawString (dpy, t->title_w,tGC,hor_off+2,  Scr.WindowFont.y+2+Scr.TitleTextY,  t->name, strlen(t->name));
+-	     }
+-	     else if(Scr.TitleTextType==2){
+-                 tGC      = (onoroff?Scr.HiFontGC:Scr.LoFontGC);
+-                 ReliefGC = (onoroff?Scr.HiFontReliefGC:Scr.HiFontReliefGC);
+-                 ShadowGC = (onoroff?Scr.HiFontShadowGC:Scr.LoFontShadowGC);
+-
+-		 if(PressedW!=t->title_w)
+-		 { 
+-		   XDrawString (dpy, t->title_w,ShadowGC,hor_off+1,Scr.WindowFont.y+1+Scr.TitleTextY,  t->name, strlen(t->name));    
+-                   XDrawString (dpy, t->title_w,ReliefGC,hor_off+2,Scr.WindowFont.y+2+Scr.TitleTextY,  t->name, strlen(t->name));    
+-                   XDrawString (dpy, t->title_w,tGC,     hor_off+3,Scr.WindowFont.y+3+Scr.TitleTextY,  t->name, strlen(t->name));     
+-		} else
+-		  
+-		 XDrawString (dpy, t->title_w,Scr.HiFontGC,hor_off+1,Scr.WindowFont.y+1+Scr.TitleTextY,  t->name, strlen(t->name));    	
+-
+-
+-	     }
+-	     else
+-	     { /* Default Window Draw */
+- 	     XDrawString (dpy, t->title_w,Scr.FontGC,hor_off,
+-                             Scr.WindowFont.y+ 4,
+-                             t->name, strlen(t->name));   
+-	     }
++		XDrawString (dpy, t->title_w,Scr.FontGC,hor_off,
++			     Scr.WindowFont.y+ 4,
++			     t->name, strlen(t->name));
+ 	    }
+ 	}	
+ #else
+@@ -797,9 +734,8 @@
+ 	{
+ 	case 0:
+ 	  seg[0].x1 = t->boundary_width-1;
+-          /* used to be -2 */
+ 	  seg[0].x2 = t->corner_width-2;
+-	  seg[0].y1 = t->corner_width - t->boundary_height+t->bw-1;
++	  seg[0].y1 = t->corner_width - t->boundary_height+t->bw;
+ 	  seg[0].y2 = t->corner_width - t->boundary_height+t->bw;
+ 	  break;
+ 	case 1:
+Only in .: borders.c.rej
+diff -u ./configure.c /home/malda/code/AfterStep-1.0/afterstep/configure.c
+--- ./configure.c	Wed May 21 19:53:30 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/configure.c	Sat Mar  8 19:43:54 1997
+@@ -1,17 +1,17 @@
+ /****************************************************************************
+  * This module is mostly all new
+- * by Rob Nation
++ * by Rob Nation 
+  * Copyright 1993 Robert Nation. No restrictions are placed on this code,
+  * as long as the copyright notice is preserved
+  ****************************************************************************
+  * slightly modified for BowMan
+  * by Bo Yang
+- *
++ * 
+  * slightly modified for AfterStep
+  * by Frank Fejes
+- *
++ * 
+  ****************************************************************************
+- *
++ * 
+  * Configure.c: reads the .steprc or system.steprc file, interprets it,
+  * and sets up menus, bindings, colors, and fonts as specified
+  *
+@@ -30,7 +30,6 @@
+ 
+ #include <X11/Xproto.h>
+ #include <X11/Xatom.h>
+-
+ #ifdef M4
+ #include <X11/Xmu/SysUtil.h>
+ #endif
+@@ -85,7 +84,7 @@
+ void nocolor(char *note, char *name);
+ int contexts;
+ int mods,func,func_val_1,func_val_2;
+-	
++	     
+ #ifndef NO_PAGER
+ int pager_x=10000,pager_y=10000;
+ #endif
+@@ -97,16 +96,7 @@
+ char	*TexMaxcols=NULL;
+ char	*TColor=NULL, *IColor=NULL, *MColor=NULL, *UColor=NULL, *SColor=NULL;
+ char	*TGColor=NULL;
+-char	*TPixmap=NULL,*UPixmap=NULL,*SPixmap=NULL, *MTPixmap=NULL, *MPixmap=NULL, *MTPixmapMask=NULL, *MArrowPixmap=NULL;
+-
+-char hincolor[15];
+-char hircolor[15];
+-char hiscolor[15];
+-char loncolor[15];
+-char lorcolor[15];
+-char loscolor[15];
+-
+-
++char	*TPixmap=NULL,*UPixmap=NULL,*SPixmap=NULL;
+ extern void InitTextureData(TextureInfo   *info, char *title, char*utitle,
+ 			    char *mtitle, char *menu, char *sticky, char *text);
+ int   IconTexType = TEXTURE_BUILTIN;
+@@ -158,7 +148,7 @@
+   {"IconBox",           SetBox,         (char **)0, (int *)0},
+   {"StickyIcons",       SetFlag,        (char **)StickyIcons, (int *)0},
+   {"IconFont",          assign_string,  &Scr.IconFont.name, (int *)0},
+-  {"IconTitle",		SetFlag,	(char **)IconTitle, (int*)0},
++  {"IconTitle",		SetFlag,	(char **)IconTitle, (int*)0},      
+ #ifndef PRUNE
+   {"Icon",              SetOneStyle,    (char **)&Scr.TheList,(int *)ICON_FLAG},
+ #endif
+@@ -174,13 +164,13 @@
+   {"CirculateSkipIcons",SetFlag,        (char **)CirculateSkipIcons, (int *)0},
+ 
+ #ifndef PRUNE
+-  {"NoFocus",           SetOneStyle,    (char **)&Scr.TheList,
++  {"NoFocus",           SetOneStyle,    (char **)&Scr.TheList, 
+                                         (int *)NOFOCUS_FLAG},
+-  {"NoTitle",           SetOneStyle,    (char **)&Scr.TheList,
++  {"NoTitle",           SetOneStyle,    (char **)&Scr.TheList, 
+                                         (int *)NOTITLE_FLAG},
+-  {"NoBorder",          SetOneStyle,    (char **)&Scr.TheList,
++  {"NoBorder",          SetOneStyle,    (char **)&Scr.TheList, 
+                                         (int *)NOBORDER_FLAG},
+-  {"Sticky",            SetOneStyle,    (char **)&Scr.TheList,
++  {"Sticky",            SetOneStyle,    (char **)&Scr.TheList, 
+                                         (int *)STICKY_FLAG},
+   {"StaysOnTop",        SetOneStyle,    (char **)&Scr.TheList,
+                                         (int *)STAYSONTOP_FLAG},
+@@ -234,7 +224,7 @@
+   {"BackingStore",      SetFlag,        (char **)BackingStore, (int *)0},
+   {"AppsBackingStore",  SetFlag,        (char **)AppsBackingStore, (int *)0},
+   {"SaveUnders",        SetFlag,        (char **)SaveUnders, (int *)0},
+-
++  
+   {"ModulePath",        assign_string,  &ModulePath, (int *)0},
+ #ifndef PRUNE
+   {"Module",            executeModule,  (char **)0, (int *)0},
+@@ -243,7 +233,7 @@
+   {"TitleBarStyle",	assign_string,	&TitleStyle,	(int *)0},
+   {"TextureTypes",	assign_string,	&TexTypes, (int *)0},
+   {"TextureMaxColors", assign_string,	&TexMaxcols, (int *)0},
+-
++      
+   {"TitleTextureColor", assign_string,  &TColor, (int*)0}, /* title */
+   {"MenuTextureColor", assign_string,  &IColor, (int*)0},  /* menu items */
+   {"UTitleTextureColor", assign_string,  &UColor, (int*)0}, /*unfocused title*/
+@@ -252,9 +242,6 @@
+   {"TitlePixmap", assign_string, &TPixmap, (int*)0},	/* title pixmap */
+   {"UTitlePixmap", assign_string, &UPixmap, (int*)0},	/* title pixmap */
+   {"STitlePixmap", assign_string, &SPixmap, (int*)0},	/* title pixmap */
+-  {"MenuPixmap", assign_string, &MPixmap, (int*)0},   /* title pixmap */
+-  {"MTitlePixmap", assign_string, &MTPixmap, (int*)0},   /* title pixmap */
+-  {"MArrowPixmap", assign_string, &MArrowPixmap, (int*)0},
+   {"TextGradientColor", assign_string,  &TGColor, (int*)0}, /* title text */
+   {"TexturedHandle", SetTextureFlag,	(char **)TexturedHandle, (int *)0},
+   {"TitlebarNoPush", SetTextureFlag,	(char **)TitlebarNoPush, (int *)0},
+@@ -267,8 +254,7 @@
+   {"ButtonNoBorder",    SetIconFlag,    (char **)IconNoBorder, (int *)0},
+ #endif
+   {"TitleTextAlign",    SetInts,        (char **)&Scr.TitleTextAlign, &dummy},
+-  {"TitleButton",       SetTitleButton, (char **)1, (int *)0},
+-  {"TitleTextMode",	        SetTitleText,   (char **)1, (int *)0},
++  {"TitleButton",       SetTitleButton, (char **)1, (int *)0},      
+   {"",                  0,              (char **)0, (int *)0}
+ };
+ 
+@@ -318,8 +304,8 @@
+ #endif
+   {"",                    0,(char **)0}
+ };
+-
+-struct charstring
++  
++struct charstring 
+ {
+   char key;
+   int  value;
+@@ -378,9 +364,9 @@
+ #endif
+ 
+ /***************************************************************
+- *
++ * 
+  * Read a XPM file
+- *
++ * 
+  **************************************************************/
+ Pixmap GetXPMTile(char *file)
+ {
+@@ -390,14 +376,14 @@
+     char *path = NULL;
+     Pixmap pix, mask;
+ #ifdef XPM
+-
++      
+     path = findIconFile(file, PixmapPath,R_OK);
+     if(path == NULL)return None;
+ 
+     XGetWindowAttributes(dpy,Scr.Root,&root_attr);
+-/*  xpm_attributes.colormap = root_attr.colormap;
++    xpm_attributes.colormap = root_attr.colormap;
+     xpm_attributes.closeness = 40000; /* Allow for "similar" colors */
+-    xpm_attributes.valuemask = (XpmReturnPixels | XpmReturnExtensions);  
++    xpm_attributes.valuemask = XpmReturnPixels | XpmColormap | XpmCloseness;
+ 
+     if (XpmReadFileToPixmap(dpy, Scr.Root, path,
+ 			    &pix, &mask,
+@@ -406,7 +392,7 @@
+ 	return None;
+     }
+     free(path);
+-    if (mask!=None)
++    if (mask!=None) 
+       XFreePixmap(dpy,mask);
+ #else
+     pix = None;
+@@ -414,42 +400,8 @@
+     return pix;
+ }
+ 
+-
+-Pixmap GetXPMTileMask(char *file, Pixmap *mask)
+-{
+-    XWindowAttributes root_attr;
+-    XpmAttributes xpm_attributes;
+-    extern char *PixmapPath;
+-    char *path = NULL;
+-    Pixmap pix;
+-#ifdef XPM
+-
+-    path = findIconFile(file, PixmapPath,R_OK);
+-    if(path == NULL)return None;
+-
+-    XGetWindowAttributes(dpy,Scr.Root,&root_attr);
+-/*  xpm_attributes.colormap = root_attr.colormap;
+-    xpm_attributes.closeness = 40000; /* Allow for "similar" colors */
+-
+-    xpm_attributes.valuemask = (XpmReturnPixels | XpmReturnExtensions);
+-
+-    if (XpmReadFileToPixmap(dpy, Scr.Root, path,
+-                            &pix, mask,
+-                            &xpm_attributes) != XpmSuccess ) {
+-        free(path);
+-        return None;
+-    }
+-    free(path);
+-#else
+-    pix = None;
+-#endif
+-   
+-    return pix;
+-}
+-
+-
+ /*****************************************************************************
+- *
++ * 
+  * This routine is responsible for reading and parsing the config file
+  *
+  ****************************************************************************/
+@@ -462,9 +414,9 @@
+   int HomeLen;			/* length of Home */
+ #ifdef ENABLE_TEXTURE
+   int icol, mcol, ucol, tcol, scol;	/* texture colors */
+-  int defcol;
++  int defcol;  
+ #endif
+-
++    
+ #ifdef M4
+   extern int m4_enable;
+ #endif
+@@ -488,7 +440,7 @@
+   Scr.MouseButtonRoot = NULL;
+   Scr.FuncKeyRoot.next = NULL;
+   Scr.TheList = NULL;
+-
++  
+   Scr.DefaultIcon = NULL;
+ 
+   /* find the home directory to look in */
+@@ -498,7 +450,7 @@
+   HomeLen = strlen(Home);
+ 
+   if(config_file[0] == '/')
+-    {
++    { 
+       home_file = safemalloc(strlen(config_file)+1);
+       strcpy(home_file,config_file);
+     }
+@@ -538,13 +490,13 @@
+        * Process the config file through m4 and save the
+        * results in a temp file.
+        */
+-
++  
+       afterstep_file = m4_defs(dpy, display_name, m4_options, afterstep_file);
+       fclose(config_fd);
++  
++      config_fd = fopen(afterstep_file, "r"); 
+ 
+-      config_fd = fopen(afterstep_file, "r");
+-
+-      if (config_fd == (FILE *) 0)
++      if (config_fd == (FILE *) 0) 
+ 	{
+ 	  perror("Cannot open m4-processed config file\n");
+ 	  exit(1);
+@@ -585,7 +537,7 @@
+ 	defcol = 32;
+     } else {
+ 	defcol = 10;
+-    }
++    }        
+     if (!TexMaxcols) {
+ 	Textures.Tmaxcols = defcol;
+ 	Textures.Imaxcols = defcol;
+@@ -601,7 +553,7 @@
+ 	Textures.Mmaxcols = (mcol >= 0 ? mcol : defcol);
+ 	Textures.Smaxcols = (scol >= 0 ? scol : defcol);
+     }
+-    InitTextureData(&Textures, TColor, UColor, MColor, IColor, SColor,
++    InitTextureData(&Textures, TColor, UColor, MColor, IColor, SColor, 
+ 					TGColor);
+     /* load titlebar pixmaps */
+     if (Textures.Ttype==TEXTURE_PIXMAP) {
+@@ -611,9 +563,9 @@
+ 	    if ((Scr.ForeTitle=GetXPMTile(TPixmap))==None) {
+ 		printf("couldn't load Titlebar tile pixmap\n");
+      		Textures.Ttype = 0;
+-	    }	
++	    }	    
+ 	}
+-    }
++    }    
+     if (Textures.Utype==TEXTURE_PIXMAP) {
+ 	if (UPixmap==NULL)
+ 	  Textures.Utype=0;
+@@ -633,49 +585,16 @@
+      		Textures.Stype = 0;
+ 	    }
+ 	}
+-    }
+-
+-
+-    if (Textures.Mtype==TEXTURE_PIXMAP) {
+-        if (MPixmap==NULL)
+-          Textures.Mtype=0;
+-        else  {
+-            if ((Scr.MenuItem=GetXPMTile(MPixmap))==None) {
+-                printf("couldn't load Menu Item pixmap\n");
+-                Textures.Mtype = 0;
+-            }
+-        }
+-    }
+-
+-    if (Textures.Itype==TEXTURE_PIXMAP) {
+-        if (MTPixmap==NULL)
+-          Textures.Itype=0;
+-        else  {
+-            if (
+-                (Scr.MenuTitle    =GetXPMTileMask(MTPixmap,&Scr.MenuTitleMask))==None)
+-                 {
+-                printf("couldn't load Menu Titlebar tile pixmap\n");
+-                Textures.Itype = 0;
+-            }
+-        }
+-    }
+-    
+-   if(MArrowPixmap==NULL)
+-      Scr.MenuArrow=None;
+-   else 
+-        if((Scr.MenuArrow=GetXPMTile(MArrowPixmap))==None) 
+-           printf("couldn't load menu arrow pixmap\n", Scr.MenuArrow=None);
+-           
+-
++    }    
+ 	
+     /* cache textures for ideal cases (types 2 and 3) */
+     if (Textures.Ttype==2 || Textures.Ttype==3) {
+ 		Scr.ForeTitle = XCreatePixmap(dpy, Scr.Root, Scr.MyDisplayWidth-1,
+ 									  NS_TITLE_HEIGHT, Scr.d_depth);
+ 		if (Scr.ForeTitle!=None) {
+-			if (!DrawHGradient(dpy, Scr.ForeTitle, 0, 0,
++			if (!DrawHGradient(dpy, Scr.ForeTitle, 0, 0, 
+ 							   Scr.MyDisplayWidth-1, NS_TITLE_HEIGHT,
+-							   Textures.Tfrom, Textures.Tto, 1,
++							   Textures.Tfrom, Textures.Tto, 1, 
+ 							   Textures.Tmaxcols, Textures.Ttype-2)) {
+ 				XFreePixmap(dpy, Scr.ForeTitle);
+ 				Scr.ForeTitle = None;
+@@ -713,12 +632,12 @@
+ 		}
+ 	}
+     if (Textures.Utype==2 || Textures.Utype==3) {
+-	Scr.BackTitle = XCreatePixmap(dpy, Scr.Root, Scr.MyDisplayWidth-1,
++	Scr.BackTitle = XCreatePixmap(dpy, Scr.Root, Scr.MyDisplayWidth-1, 
+ 				      NS_TITLE_HEIGHT, Scr.d_depth);
+ 	if (Scr.BackTitle!=None) {
+ 	    if (!DrawHGradient(dpy, Scr.BackTitle, 0, 0,
+ 			       Scr.MyDisplayWidth-1, NS_TITLE_HEIGHT,
+-			       Textures.Ufrom, Textures.Uto, 1,
++			       Textures.Ufrom, Textures.Uto, 1, 
+ 			       Textures.Umaxcols, Textures.Utype-2)) {
+ 		XFreePixmap(dpy, Scr.BackTitle);
+ 		Scr.BackTitle = None;
+@@ -727,14 +646,14 @@
+ 	} else
+ 	  Textures.Utype = 0;
+     }
+-
++    
+     if (Textures.Stype==2 || Textures.Stype==3) {
+-	Scr.StickyTitle = XCreatePixmap(dpy, Scr.Root, Scr.MyDisplayWidth-1,
+-					NS_TITLE_HEIGHT, Scr.d_depth);
++	Scr.StickyTitle = XCreatePixmap(dpy, Scr.Root, Scr.MyDisplayWidth-1, 
++					NS_TITLE_HEIGHT, Scr.d_depth);    
+ 	if (Scr.StickyTitle!=None) {
+ 	    if (!DrawHGradient(dpy, Scr.StickyTitle, 0, 0,
+ 			       Scr.MyDisplayWidth-1, NS_TITLE_HEIGHT,
+-			       Textures.Sfrom, Textures.Sto, 1,
++			       Textures.Sfrom, Textures.Sto, 1, 
+ 			       Textures.Smaxcols, Textures.Stype-2)) {
+ 		XFreePixmap(dpy, Scr.StickyTitle);
+ 		Scr.StickyTitle = None;
+@@ -742,9 +661,9 @@
+ 	    }
+ 	} else
+ 	  Textures.Stype=0;
+-    }
++    }  
+ #endif	/* ENABLE_TEXTURE */
+-
++    
+     /* create pixmaps for buttons */
+   ButtonStyle();
+ 
+@@ -757,12 +676,12 @@
+ 
+   /* if edgescroll >1000 and < 100000m
+    * wrap at edges of desktop (a "spherical" desktop) */
+-   if (Scr.EdgeScrollX >= 1000)
++   if (Scr.EdgeScrollX >= 1000) 
+      {
+        Scr.EdgeScrollX /= 1000;
+        Scr.flags |= EdgeWrapX;
+      }
+-   if (Scr.EdgeScrollY >= 1000)
++   if (Scr.EdgeScrollY >= 1000) 
+      {
+        Scr.EdgeScrollY /= 1000;
+        Scr.flags |= EdgeWrapY;
+@@ -784,7 +703,7 @@
+     Scr.flags &= ~EdgeWrapY;
+ 
+   GetColors();
+-
++    
+     /* create pixmap for icon button background */
+   IconStyle();
+ 
+@@ -800,7 +719,7 @@
+ 
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Copies a text string from the config file to a specified location
+  *
+  ****************************************************************************/
+@@ -809,42 +728,8 @@
+   *arg = stripcpy(text);
+ }
+ 
+-
+-
+-
+-/****************************************************************************
+- *
+- *  Read TitleText Controls
+- *
+- ****************************************************************************/
+-void SetTitleText(char *tline,FILE *fd, char **junk,int *junk2)
+-{
+-  int n;
+-  int ttype, y;
+-  n = sscanf(tline,"%d %d %s %s %s %s %s %s",&ttype,&y,hircolor,
+- 	     hiscolor, hincolor, lorcolor, loscolor, loncolor);
+-
+-  if (n != 8) {
+-    printf("wrong number of parameters given to TitleText\n");
+-    printf("t=%i y=%i 1=%s 2=%s 3=%s 4=%s 5=%s 6=%s\n", ttype,y,hircolor,
+-             hiscolor, hincolor, lorcolor, loscolor, loncolor);
+-    return;
+-  }
+-
+-  Scr.TitleTextType=ttype;
+-  Scr.TitleTextY=y;
+-}
+-
+-
+-
+-
+-
+-
+-
+-
+-
+ /*****************************************************************************
+- *
++ * 
+  * read the button pixmaps
+  *
+  ****************************************************************************/
+@@ -854,7 +739,7 @@
+   XpmAttributes xpm_attributes;
+   Pixmap mask;
+ 
+-
++    
+   XGetWindowAttributes(dpy, Scr.Root, &root_attr);
+   xpm_attributes.colormap = root_attr.colormap;
+   xpm_attributes.closeness = 4000;
+@@ -869,14 +754,14 @@
+     }
+     Scr.button_width[2] = xpm_attributes.width;
+     Scr.button_height[2] = xpm_attributes.height;
+-    Scr.button_style[2] = XPM_BUTTON_STYLE;
++    Scr.button_style[2] = XPM_BUTTON_STYLE;    
+ 
+-    if (mask!=None)
++    if (mask!=None) 
+       XFreePixmap(dpy,mask);
+   }
+ 
+   if (!Scr.button_pixmap[1]) {
+-    if ( XpmCreatePixmapFromData(dpy, Scr.Root, minbutton_xpm,
++    if ( XpmCreatePixmapFromData(dpy, Scr.Root, minbutton_xpm, 
+ 				 &Scr.button_pixmap[1], &mask,
+ 				 &xpm_attributes) != XpmSuccess  ) {
+       afterstep_err("Can not read minbutton_xpm to buttonstyles",NULL, NULL, NULL);
+@@ -886,16 +771,16 @@
+     Scr.button_height[1] = xpm_attributes.height;
+     Scr.button_style[1] = XPM_BUTTON_STYLE;
+ 
+-    if (mask!=None)
++    if (mask!=None) 
+       XFreePixmap(dpy,mask);
+   }
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  *  Read Titlebar pixmap button
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void SetTitleButton(char *tline,FILE *fd, char **junk,int *junk2)
+ {
+ #ifdef XPM
+@@ -903,14 +788,14 @@
+   XpmAttributes xpm_attributes;
+   extern char *PixmapPath;
+   char *path = NULL;
++  Pixmap mask;
+   int num;
+   char file[256];
+-  char file2[256];
+   int n;
+ 
+-  n = sscanf(tline,"%d %s %s",&num,file,file2);
++  n = sscanf(tline,"%d %s",&num,file);
+ 
+-  if (n < 2) {
++  if (n != 2) {
+     printf("wrong number of parameters given with TitleButton\n");
+   }
+   if (num < 0 || num > 9) {
+@@ -929,7 +814,7 @@
+   xpm_attributes.valuemask = XpmSize|XpmReturnPixels|XpmColormap|XpmCloseness;
+ 
+   if (XpmReadFileToPixmap(dpy, Scr.Root, path,
+-			  &Scr.button_pixmap[num], &Scr.button_pixmap_mask[num],
++			  &Scr.button_pixmap[num], &mask,
+ 			  &xpm_attributes) != XpmSuccess ) {
+     printf("couldn't read Titlebar button pixmap %s\n", path);
+     free(path);
+@@ -941,34 +826,8 @@
+   Scr.button_style[num]  = XPM_BUTTON_STYLE;
+ 
+   free(path);
+-
+-
+-  path = findIconFile(file2,PixmapPath,R_OK);
+-  if(path != NULL) {
+-  Scr.ButtonType=1; /* Rob's Button Mode - Shaped & Bigger, Must Relieve */
+-
+-  XGetWindowAttributes(dpy,Scr.Root,&root_attr);
+-  xpm_attributes.colormap  = root_attr.colormap;
+-  xpm_attributes.closeness = 40000; /* Allow for "similar" colors */
+-  xpm_attributes.valuemask = XpmSize|XpmReturnPixels|XpmColormap|XpmCloseness;
+-
+-  if (XpmReadFileToPixmap(dpy, Scr.Root, path,
+-                          &Scr.dbutton_pixmap[num], &Scr.dbutton_pixmap_mask[num],
+-                          &xpm_attributes) != XpmSuccess ) {
+-    printf("couldn't read Titlebar button pixmap %s\n", path);
+-    free(path);
+-    return;
+-  }
+-
+-  Scr.button_width[num]  = xpm_attributes.width;
+-  Scr.button_height[num] = xpm_attributes.height;
+-  Scr.button_style[num]  = XPM_BUTTON_STYLE;
+-  }
+-  free(path);
+-
+-
+-
+-
++  if (mask!=None) 
++    XFreePixmap(dpy,mask);
+ 
+ #endif /* XPM */
+ }
+@@ -990,8 +849,8 @@
+   xpm_attributes.valuemask = XpmSize | XpmReturnPixels | XpmColormap | XpmCloseness;
+ 
+   if(XpmCreatePixmapFromData(dpy, Scr.Root, button_xpm,
+-			     &Scr.IconBgPixmap, &Scr.IconBgMask,
+-			     &xpm_attributes) == XpmSuccess ) {
++			     &Scr.IconBgPixmap, &Scr.IconBgMask, 
++			     &xpm_attributes) == XpmSuccess ) { 
+     Scr.IconBgWidth = xpm_attributes.width;
+     Scr.IconBgHeight = xpm_attributes.height;
+     Scr.IconBgDepth = Scr.d_depth;
+@@ -1027,9 +886,9 @@
+ }
+ 
+ /***************************************************************
+- *
++ * 
+  * Read a XPM Icon Background from file
+- *
++ * 
+  **************************************************************/
+ static int GetXPMIconFile(char *file)
+ {
+@@ -1038,7 +897,7 @@
+     XpmAttributes xpm_attributes;
+     extern char *PixmapPath;
+     char *path = NULL;
+-
++      
+     path = findIconFile(file, PixmapPath,R_OK);
+     if(path == NULL) return False;
+ 
+@@ -1067,9 +926,9 @@
+ }
+ 
+ /*******************************************************************
+- *
++ * 
+  * Make a gradient pixmap for iconized windows background (aka Buttons)
+- *
++ * 
+  *******************************************************************/
+ 
+ static int GetXPMGradient(int from[3], int to[3], int maxcols, int type)
+@@ -1093,7 +952,7 @@
+       if (!DrawHGradient(dpy, Scr.IconBgPixmap, 0, 0, 64,64,
+                          from, to, 0, maxcols, type-TEXTURE_HGRADIENT)) {
+ 	XFreePixmap(dpy, Scr.IconBgPixmap);
+-	return 0;
++	return 0;       
+       }
+       break;
+     case TEXTURE_VGRADIENT:
+@@ -1101,21 +960,21 @@
+       if (!DrawVGradient(dpy, Scr.IconBgPixmap, 0, 0, 64,64,
+                          from, to, 0, maxcols, type-TEXTURE_VGRADIENT)) {
+ 	XFreePixmap(dpy, Scr.IconBgPixmap);
+-	return 0;
+-      }
++	return 0;       
++      } 
+       break;
+     default:
+       return 0;
+   }
+ 
+-  DrawOutline(Scr.IconBgPixmap,64,64);
++  DrawOutline(Scr.IconBgPixmap,64,64);    
+   return 1;
+ }
+ 
+ /*******************************************************************
+- *
++ * 
+  * Make a solid color pixmap for iconized windows background (aka Buttons)
+- *
++ * 
+  *******************************************************************/
+ 
+ static int GetSolidXPM(Pixel pixel)
+@@ -1141,7 +1000,7 @@
+ }
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Create pixmap for icon background
+  *
+  ****************************************************************************/
+@@ -1155,9 +1014,9 @@
+ 
+ #ifdef XPM
+   /* Free resources if this is a restart */
+-  if (Scr.IconBgPixmap != None)
++  if (Scr.IconBgPixmap != None) 
+     XFreePixmap(dpy,Scr.IconBgPixmap);
+-  if (Scr.IconBgMask != None)
++  if (Scr.IconBgMask != None) 
+     XFreePixmap(dpy,Scr.IconBgMask);
+ #endif /* XPM */
+ 
+@@ -1195,7 +1054,7 @@
+       } else {
+ 	BgColor=GetColor("grey");
+       }
+-
++     
+       if (!GetSolidXPM(BgColor)) {
+ 	afterstep_err("couldn't create Solid Button. Using default.\n",NULL,NULL,NULL);
+ 	SetBuiltInIconBg();
+@@ -1214,12 +1073,12 @@
+   if (Scr.flags & IconTitle) {
+ 	  XSetForeground(dpy, Scr.IconGC, Scr.HiColors.back);
+ 	  XFillRectangle(dpy, Scr.IconBgPixmap, Scr.IconGC, 1, 1,
+-			 Scr.IconBgWidth-2,Scr.IconFont.height+2);
++			 Scr.IconBgWidth-2,Scr.IconFont.height+2);      
+   }
+ }
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Changes a cursor def.
+  *
+  ****************************************************************************/
+@@ -1230,14 +1089,14 @@
+   num = sscanf(text,"%d %d",&cursor_num, &cursor_style);
+   if((num != 2)||(cursor_num >= MAX_CURSORS)||(cursor_num<0))
+     {
+-      afterstep_err("Bad cursor in line %s",orig_tline,NULL,NULL);
++      afterstep_err("Bad cursor in line %s",orig_tline,NULL,NULL);    
+       return;
+     }
+   Scr.ASCursors[cursor_num] = XCreateFontCursor(dpy,cursor_style);
+ }
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Sets a boolean flag to true
+  *
+  ****************************************************************************/
+@@ -1261,7 +1120,7 @@
+ }
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Reads in one or two integer values
+  *
+  ****************************************************************************/
+@@ -1272,7 +1131,7 @@
+ 
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Reads in a list of mouse button numbers
+  *
+  ****************************************************************************/
+@@ -1286,15 +1145,15 @@
+       if(next == text)  break;
+       text = next;
+       if (*text == ',') text++;
+-      if((b > 0) && (b <= MAX_BUTTONS))
++      if((b > 0) && (b <= MAX_BUTTONS)) 
+ 	  Scr.RaiseButtons |= 1<<b;
+     }
+   Scr.flags |= ClickToRaise;
+ }
+-
++  
+ 
+ /*****************************************************************************
+- *
++ * 
+  * Reads Dimensions for an icon box from the config file
+  *
+  ****************************************************************************/
+@@ -1332,25 +1191,25 @@
+  * This routine computes the shadow color from the background color
+  *
+  ****************************************************************************/
+-Pixel GetShadow(Pixel background)
++Pixel GetShadow(Pixel background) 
+ {
+   XColor bg_color;
+   XWindowAttributes attributes;
+   unsigned int r,g,b;
+-
++  
+   XGetWindowAttributes(dpy,Scr.Root,&attributes);
+-
++  
+   bg_color.pixel = background;
+   XQueryColor(dpy,attributes.colormap,&bg_color);
+-
++  
+   r = bg_color.red % 0xffff;
+   g = bg_color.green % 0xffff;
+   b = bg_color.blue % 0xffff;
+-
++  
+   r = r >>1;
+   g = g >>1;
+   b = b >>1;
+-
++  
+   /* pure black: use gray */
+   if( r==0 && g== 0 && b==0)
+      r = g = b = 0x7fff;
+@@ -1363,7 +1222,7 @@
+       nocolor("alloc shadow","");
+       bg_color.pixel = background;
+     }
+-
++  
+   return bg_color.pixel;
+ }
+ 
+@@ -1372,19 +1231,19 @@
+  * This routine computes the hilight color from the background color
+  *
+  ****************************************************************************/
+-Pixel GetHilite(Pixel background)
++Pixel GetHilite(Pixel background) 
+ {
+   XColor bg_color, white_p;
+   XWindowAttributes attributes;
+-
++  
+   XGetWindowAttributes(dpy,Scr.Root,&attributes);
+-
++  
+   bg_color.pixel = background;
+   XQueryColor(dpy,attributes.colormap,&bg_color);
+ 
+   white_p.pixel = GetColor(white);
+   XQueryColor(dpy,attributes.colormap,&white_p);
+-
++  
+ #ifndef min
+ #define min(a,b) (((a)<(b)) ? (a) : (b))
+ #define max(a,b) (((a)>(b)) ? (a) : (b))
+@@ -1397,7 +1256,7 @@
+   bg_color.red = max((white_p.red/5), bg_color.red);
+   bg_color.green = max((white_p.green/5), bg_color.green);
+   bg_color.blue = max((white_p.blue/5), bg_color.blue);
+-
++  
+   bg_color.red = min(white_p.red, (bg_color.red*140)/100);
+   bg_color.green = min(white_p.green, (bg_color.green*140)/100);
+   bg_color.blue = min(white_p.blue, (bg_color.blue*140)/100);
+@@ -1406,7 +1265,7 @@
+ #ifdef max
+ #undef max
+ #endif
+-
++  
+   if(!XAllocColor(dpy,attributes.colormap,&bg_color))
+     {
+       nocolor("alloc hilight","");
+@@ -1443,17 +1302,17 @@
+       /* black and white - override user choices */
+ 
+       Scr.MenuColors.back = GetColor(white);
+-      Scr.MenuColors.fore = GetColor(black);
++      Scr.MenuColors.fore = GetColor(black); 
+       Scr.MenuStippleColors.back = GetColor(white);
+-      Scr.MenuStippleColors.fore = GetColor(black);
++      Scr.MenuStippleColors.fore = GetColor(black); 
+       Scr.MenuRelief.back = GetColor(black);
+       Scr.MenuRelief.fore = GetColor(white);
+       Scr.StdColors.back = GetColor(white);
+-      Scr.StdColors.fore = GetColor(black);
++      Scr.StdColors.fore = GetColor(black); 
+       Scr.StickyColors.back = GetColor(white);
+-      Scr.StickyColors.fore = GetColor(black);
++      Scr.StickyColors.fore = GetColor(black); 
+       Scr.HiColors.back  = GetColor(white);
+-      Scr.HiColors.fore  = GetColor(black);
++      Scr.HiColors.fore  = GetColor(black); 
+       Scr.StdRelief.back = GetColor(black);
+       Scr.StdRelief.fore = GetColor(white);
+       Scr.StickyRelief.back = GetColor(black);
+@@ -1470,17 +1329,17 @@
+       /* color - accept user choices */
+ 
+       Scr.MenuColors.back = GetColor(Menuback);
+-      Scr.MenuColors.fore = GetColor(Menufore);
++      Scr.MenuColors.fore = GetColor(Menufore); 
+       Scr.MenuStippleColors.back = GetColor(Menuback);
+-      Scr.MenuStippleColors.fore = GetColor(Menustipple);
++      Scr.MenuStippleColors.fore = GetColor(Menustipple); 
+       Scr.MenuRelief.back = GetShadow(Scr.MenuColors.back);
+       Scr.MenuRelief.fore = GetHilite(Scr.MenuColors.back);
+       Scr.StdColors.back = GetColor(Stdback);
+-      Scr.StdColors.fore = GetColor(Stdfore);
++      Scr.StdColors.fore = GetColor(Stdfore); 
+       Scr.StickyColors.back = GetColor(Stickyback);
+-      Scr.StickyColors.fore = GetColor(Stickyfore);
++      Scr.StickyColors.fore = GetColor(Stickyfore); 
+       Scr.HiColors.back  =  GetColor(Hiback);
+-      Scr.HiColors.fore  = GetColor(Hifore);
++      Scr.HiColors.fore  = GetColor(Hifore); 
+       Scr.StdRelief.back = GetShadow(Scr.StdColors.back);
+       Scr.StdRelief.fore = GetHilite(Scr.StdColors.back);
+       Scr.StickyRelief.back = GetShadow(Scr.StickyColors.back);
+@@ -1545,7 +1404,7 @@
+ 			Scr.IconFont.font->ascent+Scr.IconFont.font->descent;
+ 		  Scr.IconFont.y = Scr.IconFont.font->ascent;
+ 		  IconFont = &Scr.IconFont;
+-	  } else {		
++	  } else {		  
+ 		  nofont("fixed: that's bad...");
+ 		  exit(1);
+ 	  }
+@@ -1559,20 +1418,20 @@
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  *  Prints an error message for font loading
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void nofont(char *name)
+ {
+   afterstep_err("can't get font %s", name,NULL,NULL);
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  *  Processes a menu body definition
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ MenuRoot *ParseMenuBody(char *name,FILE *fd)
+ {
+   MenuRoot *mr;
+@@ -1617,7 +1476,7 @@
+ 	      AddToMenu(mr, stripcpy2(pline,1,True), stripcpy2(pline,2,True),
+ 		    ptr2, func,func_val_1,func_val_2, unit_1, unit_2);
+ 	}
+-
++      
+       pline = fgets(newline,(sizeof newline)-1,fd);
+       if(pline == (char *)0)return NULL;
+ 
+@@ -1631,10 +1490,10 @@
+ }
+ 
+ /****************************************************************************
++ * 
++ *  Parses a popup definition 
+  *
+- *  Parses a popup definition
+- *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void ParsePopupEntry(char *tline,FILE *fd, char **junk,int *junk2)
+ {
+   MenuRoot *mr=0;
+@@ -1663,10 +1522,10 @@
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  *  Parses a mouse binding
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void ParseMouseEntry(char *tline,FILE *fd, char **junk,int *junk2)
+ {
+   char context[256],modifiers[256],function[256],*ptr;
+@@ -1748,7 +1607,7 @@
+ 	  (func == F_WARP)||(func == F_MODULE))
+     {
+       mi = (MenuItem *)safemalloc(sizeof(MenuItem));
+-
++      
+       mi->next = (MenuItem *)NULL;
+       mi->prev = (MenuItem *)NULL;
+       mi->item_num = 0;
+@@ -1770,7 +1629,7 @@
+       mi->val1_unit = 1;
+       mi->val2_unit = 1;
+     }
+-
++  
+   temp = Scr.MouseButtonRoot;
+   Scr.MouseButtonRoot = (MouseButton *)safemalloc(sizeof(MouseButton));
+   Scr.MouseButtonRoot->func = func;
+@@ -1802,10 +1661,10 @@
+ 
+ 
+ /****************************************************************************
+- *
++ * 
+  *  Processes a line with a key binding
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void ParseKeyEntry(char *tline, FILE *fd,char **junk,int *junk2)
+ {
+   char context[256],modifiers[256],function[256],*ptr;
+@@ -1830,13 +1689,13 @@
+   match_string(func_config,function,"bad key function:",fd);
+ 
+   /* Make CirculateUp and CirculateDown take args. by Y.NOMURA */
+-
++ 
+   if ((func == F_CIRCULATE_UP) || (func == F_CIRCULATE_DOWN)||
+       (func == F_WARP))
+     ptr = stripcpy3(tline,False);
+-
++  
+   /* End of addition */
+-
++ 
+   if((func == F_EXEC)||(func == F_RESTART)||(func == F_MODULE))
+     {
+       ptr = stripcpy3(tline,True);
+@@ -1865,21 +1724,21 @@
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  * Sets menu/keybinding/mousebinding function to specified value
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void set_func(char *text, FILE *fd, char **value,int *junk)
+ {
+   func = (unsigned long)value;
+ }
+ 
+ /****************************************************************************
+- *
+- * Turns a  string context of context or modifier values into an array of
++ * 
++ * Turns a  string context of context or modifier values into an array of 
+  * true/false values (bits)
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void find_context(char *string, int *output, struct charstring *table)
+ {
+   int i=0,j=0;
+@@ -1919,11 +1778,11 @@
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  * Matches text from config to a table of strings, calls routine
+  * indicated in table.
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void match_string(struct config *table, char *text, char *error_msg, FILE *fd)
+ {
+   int j;
+@@ -1949,21 +1808,21 @@
+     }
+ }
+ 
+-
+-
++  
++  
+ 
+ /****************************************************************************
+- *
++ * 
+  * Generates the window for a menu
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ void MakeMenu(MenuRoot *mr)
+ {
+   MenuItem *cur;
+   unsigned long valuemask;
+   XSetWindowAttributes attributes;
+   int y;
+-
++  
+   /* lets first size the window accordingly */
+   mr->width += 15;
+   if(mr->width2 > 0)
+@@ -1995,7 +1854,7 @@
+   mr->in_use = 0;
+   mr->height = y;
+ 
+-#ifndef NO_SAVEUNDERS
++#ifndef NO_SAVEUNDERS   
+   valuemask = (CWBackPixel | CWEventMask | CWCursor | CWSaveUnder);
+ #else
+   valuemask = (CWBackPixel | CWEventMask | CWCursor);
+@@ -2003,7 +1862,7 @@
+   attributes.background_pixel = Scr.MenuColors.back;
+   attributes.event_mask = (ExposureMask | EnterWindowMask);
+   attributes.cursor = Scr.ASCursors[MENU];
+-#ifndef NO_SAVEUNDERS
++#ifndef NO_SAVEUNDERS   
+   attributes.save_under = TRUE;
+ #endif
+   mr->width = mr->width + mr->width2;
+@@ -2014,7 +1873,7 @@
+ 			 (Visual *) CopyFromParent,
+ 			 valuemask, &attributes);
+   XSaveContext(dpy,mr->w,MenuContext,(caddr_t)mr);
+-
++  
+   return;
+ }
+ 
+@@ -2022,23 +1881,23 @@
+  * Procedure:
+  *	scanForHotkeys - Look for hotkey markers in a MenuItem
+  * 							(pete@tecc.co.uk)
+- *
++ * 
+  * Inputs:
+  *	it	- MenuItem to scan
+  * 	which 	- +1 to look in it->item1 and -1 to look in it->item2.
+  *
+  ***********************************************************************/
+ 
+-void scanForHotkeys(MenuItem *it, int which)
++void scanForHotkeys(MenuItem *it, int which) 
+ {
+   char *start, *txt;
+ 
+   start = (which > 0) ? it->item : it->item2;	/* Get start of string	*/
+-  for (txt = start; *txt != '\0'; txt++)
++  for (txt = start; *txt != '\0'; txt++) 
+     {	/* Scan whole string	*/
+-      if (*txt == '&')
++      if (*txt == '&') 
+ 	{		/* A hotkey marker?			*/
+-      if (txt[1] == '&')
++      if (txt[1] == '&') 
+ 	{	/* Just an escaped &			*/
+ 	  char *tmp;		/* Copy the string down over it		*/
+ 	  for (tmp = txt; *tmp != '\0'; tmp++) tmp[0] = tmp[1];
+@@ -2046,7 +1905,7 @@
+ 	}
+       /* It's a hot key marker - work out the offset value		*/
+       it->hotkey = txt[1];
+-      for (; txt[1] != '\0'; txt++)
++      for (; txt[1] != '\0'; txt++) 
+ 	txt[0] = txt[2];	/* Copy down..	*/
+       return;			/* Only one hotkey per item...		*/
+     }
+@@ -2071,7 +1930,7 @@
+  *	func	- the numeric function
+  *
+  ***********************************************************************/
+-void AddToMenu(MenuRoot *menu, char *item, char *item2, char *action,int func,
++void AddToMenu(MenuRoot *menu, char *item, char *item2, char *action,int func, 
+ 	       long func_val_1,long func_val_2, char unit_1, char unit_2)
+ {
+   MenuItem *tmp;
+@@ -2092,7 +1951,7 @@
+       tmp->prev = menu->last;
+     }
+   menu->last = tmp;
+-
++  
+   tmp->item = item;
+   if (item != (char *)0)
+     {
+@@ -2162,7 +2021,7 @@
+     menu->width2 = width;
+   if((width==0)&&(tmp->strlen2>0))
+     menu->width2 = 1;
+-
++  
+   tmp->item_num = menu->items++;
+ }
+ 
+@@ -2181,7 +2040,7 @@
+ MenuRoot *NewMenuRoot(char *name)
+ {
+   MenuRoot *tmp;
+-
++  
+   tmp = (MenuRoot *) safemalloc(sizeof(MenuRoot));
+   tmp->name = name;
+   tmp->first = NULL;
+@@ -2191,7 +2050,7 @@
+   tmp->width2 = 0;
+ #ifdef ENABLE_TEXTURE
+   tmp->titlebg = None;
+-  tmp->itembg = None;
++  tmp->itembg = None;  
+ #endif
+   tmp->w = None;
+   return (tmp);
+@@ -2227,8 +2086,8 @@
+   if ((keysym = XStringToKeysym(name)) == NoSymbol ||
+       (keycode = XKeysymToKeycode(dpy, keysym)) == 0)
+     return;
+-
+-
++  
++ 
+   XDisplayKeycodes(dpy, &min, &max);
+   for (i=min; i<=max; i++)
+     if (XKeycodeToKeysym(dpy, i, 0) == keysym)
+@@ -2253,17 +2112,17 @@
+ 	  tmp->val2_unit = 100;
+ 	else
+ 	  tmp->val2_unit = Scr.MyDisplayHeight;
+-	
++	    
+ 	tmp->menu = mr;
+       }
+   return;
+ }
+ 
+ /****************************************************************************
+- *
++ * 
+  * Loads a single color
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ Pixel GetColor(char *name)
+ {
+   XColor color;
+@@ -2271,11 +2130,11 @@
+ 
+   XGetWindowAttributes(dpy,Scr.Root,&attributes);
+   color.pixel = 0;
+-   if (!XParseColor (dpy, attributes.colormap, name, &color))
++   if (!XParseColor (dpy, attributes.colormap, name, &color)) 
+      {
+        nocolor("parse",name);
+      }
+-   else if(!XAllocColor (dpy, attributes.colormap, &color))
++   else if(!XAllocColor (dpy, attributes.colormap, &color)) 
+      {
+        nocolor("alloc",name);
+      }
+@@ -2287,11 +2146,11 @@
+   afterstep_err("can't %s color %s", note,name,NULL);
+ }
+ /****************************************************************************
+- *
++ * 
+  * Copies a string into a new, malloc'ed string
+  * Strips leading spaces and trailing spaces and new lines
+  *
+- ****************************************************************************/
++ ****************************************************************************/ 
+ char *stripcpy(char *source)
+ {
+   char *tmp,*ptr;
+@@ -2311,10 +2170,10 @@
+   ptr[len]=0;
+   return ptr;
+ }
+-
++  
+ 
+ /****************************************************************************
+- *
++ * 
+  * Copies a string into a new, malloc'ed string
+  * Strips all data before the first quote and after the second
+  *
+@@ -2337,13 +2196,13 @@
+   if(!tab_sensitive)
+     while((*ptr!='"')&&(*ptr != 0))
+       {
+-	ptr++;
++	ptr++;  
+ 	count++;
+       }
+   else if(tab_sensitive==1)
+     while((*ptr!='"')&&(*ptr != 0)&&(*ptr!='\t'))
+       {
+-	ptr++;
++	ptr++;  
+ 	count++;
+       }
+   else if(tab_sensitive==2)
+@@ -2372,7 +2231,7 @@
+ 
+ 
+ /****************************************************************************
+- *
++ * 
+  * Copies a string into a new, malloc'ed string
+  * Strips all data before the second quote. and strips trailing spaces and
+  * new lines
+@@ -2394,7 +2253,7 @@
+   source++;
+   return stripcpy(source);
+ }
+-
++  
+ void bad_binding(int num)
+ {
+   afterstep_err("bad binding in line %s",orig_tline,NULL,NULL);
+@@ -2413,23 +2272,16 @@
+ {
+   XGCValues gcv;
+   unsigned long gcm;
+-
++  
+   /* create GC's */
+-
+-  gcm = GCForeground|GCBackground|GCGraphicsExposures;
+-  gcv.foreground = Scr.StdColors.fore;
+-  gcv.background = Scr.StdColors.back;
+-  gcv.graphics_exposures = False;
+-  Scr.MaskGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
+-  gcm = GCLineWidth|GCForeground|GCBackground|GCFunction;
++  gcm = GCLineWidth|GCForeground|GCBackground|GCFunction; 
+   gcv.function = GXcopy;
+   gcv.line_width = 1;
+   gcv.foreground = Scr.StdColors.fore;
+   gcv.background = Scr.StdColors.back;
+   Scr.LineGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
+ 
+-  gcm = GCFunction|GCLineWidth|GCForeground|GCSubwindowMode;
++  gcm = GCFunction|GCLineWidth|GCForeground|GCSubwindowMode; 
+   gcv.function = GXxor;
+   gcv.line_width = 0;
+   gcv.foreground = XORvalue;
+@@ -2441,33 +2293,6 @@
+   gcv.line_width = 0;
+   gcv.function = GXcopy;
+   gcv.plane_mask = AllPlanes;
+-
+-  if(Scr.TitleTextType!=0){
+-    gcv.foreground =  GetColor(hircolor);
+-    gcv.font =  Scr.WindowFont.font->fid;
+-    Scr.HiFontReliefGC= XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
+-    gcv.foreground =  GetColor(hiscolor);
+-    gcv.font =  Scr.WindowFont.font->fid;
+-    Scr.HiFontShadowGC= XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
+-    gcv.foreground =  GetColor(hincolor);
+-    gcv.font =  Scr.WindowFont.font->fid;
+-    Scr.HiFontGC= XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
+-    gcv.foreground =  GetColor(lorcolor);
+-    gcv.font =  Scr.WindowFont.font->fid;
+-    Scr.LoFontReliefGC= XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
+-    gcv.foreground =  GetColor(loscolor);
+-    gcv.font =  Scr.WindowFont.font->fid;
+-    Scr.LoFontShadowGC= XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
+-    gcv.foreground =  GetColor(loncolor);
+-    gcv.font =  Scr.WindowFont.font->fid;
+-    Scr.LoFontGC= XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-  }
+-
+   gcv.foreground = Scr.StdColors.fore;
+   gcv.background = Scr.StdColors.back;
+   gcv.font =  Scr.StdFont.font->fid;
+@@ -2477,10 +2302,10 @@
+    * call in FindScreenInfo (events.c) (since drawable is a pixmap).
+    */
+   gcv.graphics_exposures = False;
+-
++  
+   Scr.NormalGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
+ 
+-
++    
+   /* GC for pager labels */
+   Scr.FontGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
+ 
+@@ -2498,11 +2323,11 @@
+   gcv.foreground = Scr.HiRelief.fore;
+   gcv.background = Scr.HiRelief.back;
+   gcv.fill_style = FillSolid;
+-  Scr.HiReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.HiReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+ 
+   gcv.foreground = Scr.HiRelief.back;
+   gcv.background = Scr.HiRelief.fore;
+-  Scr.HiShadowGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.HiShadowGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+ 
+   if (Scr.BevelReliefGC==None)
+ 	  Scr.BevelReliefGC=Scr.HiReliefGC;
+@@ -2523,7 +2348,7 @@
+       gcm=GCFunction|GCPlaneMask|GCGraphicsExposures|GCLineWidth|GCForeground|
+ 	GCBackground|GCFont|GCStipple|GCFillStyle;
+       Scr.MenuStippleGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
+-
++      
+       gcm=GCFunction|GCPlaneMask|GCGraphicsExposures|GCLineWidth|GCForeground|
+ 	GCBackground|GCFont;
+       gcv.fill_style = FillSolid;
+@@ -2536,24 +2361,24 @@
+     }
+   gcv.foreground = Scr.MenuRelief.fore;
+   gcv.background = Scr.MenuRelief.back;
+-  Scr.MenuReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.MenuReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+ 
+   gcv.foreground = Scr.MenuRelief.back;
+   gcv.background = Scr.MenuRelief.fore;
+-  Scr.MenuShadowGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.MenuShadowGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+ 
+   gcv.foreground = Scr.StdRelief.fore;
+   gcv.background = Scr.StdRelief.back;
+-  Scr.StdReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.StdReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+ 
+   gcv.foreground = Scr.StdRelief.back;
+   gcv.background = Scr.StdRelief.fore;
+-  Scr.StdShadowGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.StdShadowGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+   Scr.ScratchGC2 = XCreateGC(dpy, Scr.Root, gcm, &gcv);
+ 
+   gcv.foreground = Scr.StickyRelief.fore;
+   gcv.background = Scr.StickyRelief.back;
+-  Scr.StickyReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);
++  Scr.StickyReliefGC = XCreateGC(dpy, Scr.Root, gcm, &gcv);  
+ 
+   gcv.foreground = Scr.StickyRelief.back;
+   gcv.background = Scr.StickyRelief.fore;
+@@ -2562,7 +2387,6 @@
+   gcv.foreground = Scr.HiColors.fore;
+   gcv.font = Scr.IconFont.font->fid;
+   Scr.IconGC = XCreateGC(dpy, Scr.Root, GCForeground|GCFont, &gcv);
+-
+ }
+ 
+ /***********************************************************************
+@@ -2571,7 +2395,7 @@
+  *	SetOneStyle - add a window name to the no title list
+  *
+  *  Inputs:
+- *	name	- a pointer to the name of the window
++ *	name	- a pointer to the name of the window 
+  *
+  ***********************************************************************/
+ #ifndef PRUNE
+@@ -2613,8 +2437,8 @@
+       free (p);
+     }
+   AddToList(name,icon_name,new_flags,0,desknumber,0,0,NULL,NULL,0,0);
+-}
+-#endif
++}    
++#endif 
+ 
+ #ifdef	M4
+ 
+@@ -2646,11 +2470,11 @@
+     static char *cp = NULL;
+     static int maxsize = 0;
+     int n;
+-
++    
+     /* The char * storage only lasts for 1 call... */
+ 
+     /* Get space to hold everything, if needed */
+-
++    
+     n = EXTRA + strlen(name) + strlen(def);
+     if (n > maxsize) {
+ 	maxsize = n;
+@@ -2674,7 +2498,7 @@
+       }
+     else
+       strcpy(cp, "define(");
+-
++    
+     strcat(cp, name);
+ 
+     /* Tack on "," and 2 sets of starting quotes */
+@@ -2697,14 +2521,14 @@
+       }
+ 
+     strcat(cp, "dnl\n");
+-
++    
+     return(cp);
+ }
+ 
+ static char *MkNum(char *name,int def)
+ {
+     char num[20];
+-
++    
+     sprintf(num, "%d", def);
+     return(MkDef(name, num));
+ }
+@@ -2731,7 +2555,7 @@
+     }
+     strcat(tmp_name, "/steprcXXXXX");
+     mktemp(tmp_name);
+-
++    
+     if (*tmp_name == '\0')
+       {
+ 	perror("mktemp failed in m4_defs");
+@@ -2753,7 +2577,7 @@
+ 	perror("Cannot open pipe to m4");
+ 	exit(0377);
+     }
+-
++    
+     mygethostname(client,MAXHOSTNAME);
+ 
+     mygetostype  (ostype, sizeof ostype);
+@@ -2775,7 +2599,7 @@
+     /* TWM_TYPE is afterstep, for completeness */
+ 
+     fputs(MkDef("TWM_TYPE", "afterstep"), tmpf);
+-
++    
+     /* The machine running the X server */
+     fputs(MkDef("SERVERHOST", server), tmpf);
+     /* The machine running the window manager process */
+@@ -2806,7 +2630,7 @@
+ 
+     fputs(MkNum("BITS_PER_RGB", visual->bits_per_rgb), tmpf);
+ 
+-    switch(visual->class)
++    switch(visual->class) 
+       {
+ 	case(StaticGray):
+ 	  vc = "StaticGray";
+@@ -2830,11 +2654,11 @@
+ 	vc = "NonStandard";
+ 	break;
+       }
+-
++    
+     fputs(MkDef("CLASS", vc), tmpf);
+-    if (visual->class != StaticGray && visual->class != GrayScale)
++    if (visual->class != StaticGray && visual->class != GrayScale) 
+       fputs(MkDef("COLOR", "Yes"), tmpf);
+-    else
++    else 
+       fputs(MkDef("COLOR", "No"), tmpf);
+     fputs(MkDef("AFTER_VERSION", VERSION), tmpf);
+ 
+@@ -2867,18 +2691,18 @@
+     fputs(MkDef("OPTIONS", options), tmpf);
+ 
+     fputs(MkDef("AFTERDIR", AFTERDIR), tmpf);
+-
++    
+     /*
+      * At this point, we've sent the definitions to m4.  Just include
+      * the steprc file now.
+      */
+-
++    
+     fprintf(tmpf, "%sinclude(%s%s%s)\n",
+ 	    (m4_prefix) ? "m4_": "",
+ 	    m4_startquote,
+ 	    config_file,
+ 	    m4_endquote);
+-
++    
+     pclose(tmpf);
+     return(tmp_name);
+ }
+diff -u ./icons.c /home/malda/code/AfterStep-1.0/afterstep/icons.c
+--- ./icons.c	Wed May 14 17:38:51 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/icons.c	Thu Mar 20 19:09:21 1997
+@@ -221,8 +221,8 @@
+ 	  char *text=NULL;
+ 	  
+ 	  XSetForeground(dpy, Scr.IconGC, Scr.HiColors.back);
+-/*	  XFillRectangle(dpy, Tmp_win->icon_pixmap_w, Scr.IconGC, 1, 1,
+-			 Tmp_win->icon_p_width-2,titleH+6); */
++	  XFillRectangle(dpy, Tmp_win->icon_pixmap_w, Scr.IconGC, 1, 1,
++			 Tmp_win->icon_p_width-2,titleH+6);
+ 	  XSetForeground(dpy, Scr.IconGC, Scr.HiColors.fore);	  
+ 	  if (Tmp_win->icon_name==NULL) {
+ 	      if (Tmp_win->name!=NULL) {
+@@ -255,11 +255,8 @@
+ 		      cnt = i;
+ 		  }
+ 	  }
+-	  
+ 	  XDrawString(dpy, Tmp_win->icon_pixmap_w, Scr.IconGC, textX,
+ 			  Scr.IconFont.font->ascent+1,  text, cnt);	  
+-         /*  XDrawString(dpy, Tmp_win->icon_pixmap_w, Scr.IconGC, textX+1,
+-			  Scr.IconFont.font->ascent+2,  text, cnt); */
+       }
+     }
+ }
+diff -u ./menus.c /home/malda/code/AfterStep-1.0/afterstep/menus.c
+--- ./menus.c	Wed May 21 19:28:47 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/menus.c	Sat Apr 19 16:26:01 1997
+@@ -46,8 +46,6 @@
+  ***********************************************************************/
+ #include "../configure.h"
+ 
+-
+-
+ #include <stdio.h>
+ #include <signal.h>
+ #include <string.h>
+@@ -56,8 +54,6 @@
+ #include <sys/types.h>
+ #include <sys/time.h>
+ 
+-
+-
+ #include "afterstep.h"
+ #include "menus.h"
+ #include "misc.h"
+@@ -67,11 +63,6 @@
+ #include "stepgfx.h"
+ #endif
+ 
+-
+-#ifdef SHAPE
+-#include <X11/extensions/shape.h>
+-#endif /* SHAPE */  
+-
+ short menu_on=0;
+ Bool IgnoreRelease = 1;
+ int BottomOfPage=0;
+@@ -187,17 +178,6 @@
+ 		    menu->titlebg = None;
+ 		}
+ 		break;
+-             case 128:
+-                  XCopyArea(dpy, Scr.MenuTitle, menu->titlebg, Scr.NormalGC, 0, 0, menu->width-2, menu->first->y_height-2, 0,0);
+-                break;
+-             case 129:
+-                  XSetWindowBackgroundPixmap(dpy, menu->w, Scr.MenuTitle);
+-                  if(Scr.MenuTitleMask!=None)
+-                    XShapeCombineMask(dpy, menu->w, ShapeBounding, 0, 0,
+-                                  Scr.MenuTitleMask, ShapeSet);  
+-                  XFreePixmap(dpy, menu->titlebg);
+-                break;
+-                
+ 	     default:
+ 		XFreePixmap(dpy, menu->titlebg);
+ 		menu->titlebg = None;
+@@ -206,10 +186,6 @@
+ 		Textures.Mtype=0;
+ 	    }
+ 	}
+-        if(Textures.Mtype==128)
+-          XSetWindowBackgroundPixmap(dpy, menu->w, Scr.MenuTitle);
+-
+-
+ 	if ((menu->itembg==None) && (Textures.Itype>0) && (menu->last!=NULL)) {
+ 	    menu->itembg =  XCreatePixmap(dpy, menu->w, menu->width-2,
+ 					  menu->last->y_height-3,
+@@ -244,12 +220,6 @@
+ 		    menu->itembg = None;
+ 		}
+ 		break;		
+-             case 128: /* Pixmap */
+-                  if(Textures.Mtype!=129)
+-                    XCopyArea(dpy, Scr.MenuItem, menu->itembg, Scr.NormalGC,0, 0, menu->width-2, menu->last->y_height-3,0,0);
+-                  else { XFreePixmap(dpy, menu->itembg);
+-                       menu->itembg = None; }
+-                break;
+ 	     default:
+ 		XFreePixmap(dpy, menu->itembg);
+ 		menu->itembg = None;		
+@@ -350,16 +320,11 @@
+       	  if (mr->titlebg != None) {
+ 	     Globalgcv.foreground = Scr.HiColors.back;
+ 	     XChangeGC(dpy,Scr.ScratchGC1,GCForeground,&Globalgcv);
+-
+-             if(Textures.Mtype<129)
+-	       XCopyArea(dpy, mr->titlebg, mr->w, DefaultGC(dpy,Scr.screen),
++	     XCopyArea(dpy, mr->titlebg, mr->w, DefaultGC(dpy,Scr.screen),
+ 		       0, y_offset, mr->width-1, mr->first->y_height-2, 1,
+ 		       y_offset+1);
+-             else XCopyArea(dpy, mr->titlebg, mr->w, DefaultGC(dpy,Scr.screen),
+-                       0, y_offset+1, mr->width-1, mr->height, 1, y_offset+1);
+-             if(Textures.Mtype<129)
+-	       XDrawRectangle(dpy, mr->w, Scr.ScratchGC1, 0, y_offset,
+-  		  mr->width-1, y_height-2);
++	     XDrawRectangle(dpy, mr->w, Scr.ScratchGC1, 0, y_offset,
++		mr->width-1, y_height-2);
+ 	      text_y += 4;
+           }
+           else
+@@ -375,15 +340,14 @@
+    else {
+ #ifdef ENABLE_TEXTURE
+        if (mr->itembg!=None) {
+-           if(Textures.Mtype<129)
+-	     XCopyArea(dpy, mr->itembg, mr->w, DefaultGC(dpy,Scr.screen), 0, 0, 
++	   XCopyArea(dpy, mr->itembg, mr->w, DefaultGC(dpy,Scr.screen), 0, 0, 
+ 		     mr->width-2, mr->last->y_height-3, 1, y_offset+1);
+        } else
+ #endif       
+          XClearArea(dpy, mr->w, 0,y_offset,mr->width,y_height,0);
+    }
+ #ifdef ENABLE_TEXTURE
+-    if ((mr->titlebg == None || mi->func != F_TITLE)&&(Textures.Mtype!=129)) {
++    if (mr->titlebg == None || mi->func != F_TITLE) {
+ 	RelieveHalfRectangle(mr->w, 0, y_offset, mr->width,
+ 			     y_height, ReliefGC, ShadowGC); 
+ 	RelieveRectangle(mr->w, 0, y_offset, mr->width, y_height-1, 
+@@ -394,8 +358,8 @@
+ /* end hack */
+ 	if(mi->func != F_TITLE)
+ 	  text_y += HEIGHT_EXTRA>>1;
+-        if(Textures.Mtype!=129)	
+-	  XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_height+y_offset-1,
++	
++	XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_height+y_offset-1,
+ 		  mr->width, y_height+y_offset-1);
+     }
+ #else
+@@ -408,8 +372,8 @@
+ */
+   if(mi->func != F_TITLE)
+     text_y += HEIGHT_EXTRA>>1;
+-  if(Textures.Mtype!=129)
+-    XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_height+y_offset-1,
++
++  XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_height+y_offset-1,
+ 		mr->width, y_height+y_offset-1);
+ /*
+   XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_offset,
+@@ -448,12 +412,10 @@
+       DrawTrianglePattern(mr->w, ShadowGC, ReliefGC, ShadowGC,mr->width-d-8,
+ 			  y_offset+d-1, mr->width-d-1, y_offset+d+7);
+ /* major hackage going on here */
+-  if(Textures.Mtype!=129) {
+-    if (y_offset > 30)
+-      XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_offset-1, 1600, y_offset-1);
+-    else
+-      XDrawLine( dpy, mr->w, Scr.MenuStippleGC, 0, y_offset-1, 1600, y_offset-1);	
+-    }
++  if (y_offset > 30)
++    XDrawLine( dpy, mr->w, Scr.LineGC, 0, y_offset-1, 1600, y_offset-1);
++  else
++    XDrawLine( dpy, mr->w, Scr.MenuStippleGC, 0, y_offset-1, 1600, y_offset-1);	
+   return;
+ }
+ 
+@@ -494,15 +456,13 @@
+ void DrawTrianglePattern(Window w,GC GC1,GC GC2,GC GC3,int l,int u,int r,int b)
+ {
+   int m;
+-  if(Scr.MenuArrow==None) {
+-    m = (u + b)/2;
+ 
+-    XDrawLine(dpy,w,GC1,l,u,l,b);
++  m = (u + b)/2;
+ 
+-    XDrawLine(dpy,w,GC2,l,b,r,m);
+-    XDrawLine(dpy,w,GC3,r,m,l,u);
+-    }
+-  else XCopyArea(dpy,Scr.MenuArrow, w, GC1, 0,0,r-l,b-u, l,u);
++  XDrawLine(dpy,w,GC1,l,u,l,b);
++
++  XDrawLine(dpy,w,GC2,l,b,r,m);
++  XDrawLine(dpy,w,GC3,r,m,l,u);
+ }
+ 
+ /***********************************************************************
+diff -u ./misc.h /home/malda/code/AfterStep-1.0/afterstep/misc.h
+--- ./misc.h	Wed May 14 17:39:23 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/misc.h	Tue Mar 18 20:37:12 1997
+@@ -305,7 +305,6 @@
+ void ButtonStyle();
+ void IconStyle();
+ void SetTitleButton(char *text,FILE *,char **,int *);
+-void SetTitleText(char *text, FILE *, char **, int *);
+ void SetFlag(char *text, FILE *fd, char **arg,int *);
+ void SetTextureFlag(char *text, FILE *fd, char **arg,int *);
+ void SetIconFlag(char *text, FILE *fd, char **arg,int *);
+diff -u ./screen.h /home/malda/code/AfterStep-1.0/afterstep/screen.h
+--- ./screen.h	Wed May 21 17:41:50 1997
++++ /home/malda/code/AfterStep-1.0/afterstep/screen.h	Mon Mar 10 19:49:26 1997
+@@ -157,7 +157,6 @@
+   GC StippleGC;		        /* normal GC for menus, pager, resize window */
+   GC DrawGC;			/* GC to draw lines for move and resize */
+   GC LineGC;			/* GC to draw lines on buttons */
+-  GC MaskGC;
+   GC HiReliefGC;                /* GC for highlighted window relief */
+   GC HiShadowGC;                /* GC for highlighted window shadow */
+   GC BevelReliefGC;
+@@ -175,15 +174,6 @@
+   GC StickyShadowGC;               /* GC for unselected sticky window shadow */
+   GC FontGC;                    /* GC for non-standard fonts */
+ 
+-  GC HiFontReliefGC;
+-  GC HiFontShadowGC;
+-  GC HiFontGC;
+-  GC LoFontGC;
+-  GC LoFontShadowGC;
+-  GC LoFontReliefGC;
+-  int TitleTextType;
+-  int TitleTextY;
+-
+   int SizeStringWidth;	        /* minimum width of size window */
+   int CornerWidth;	        /* corner width for decoratedwindows */
+   int BoundaryWidth;	        /* frame width for decorated windows */
+@@ -195,11 +185,6 @@
+   Pixmap BackTitle;		/* Cached titlebars for gradient or tiling */
+   Pixmap ForeTitle;		/* types 2 and 3. unfocused, focused */
+   Pixmap StickyTitle;		/* and sticky */
+-  Pixmap MenuTitle;
+-  Pixmap MenuTitleMask;
+-  Pixmap MenuArrow;
+-  Pixmap MenuArrowMask;
+-  Pixmap MenuItem;
+   Pixmap TitleGradient;		/* gradient for the focused title text */
+ #endif
+   long next_focus_sequence;	/* keep track of previously focused windows */
+@@ -241,12 +226,8 @@
+   MenuRoot *InitFunction;
+   MenuRoot *RestartFunction;
+ 
+-  int ButtonType;	
+   int button_style[10];   
+   Pixmap button_pixmap[10];
+-  Pixmap button_pixmap_mask[10];
+-  Pixmap dbutton_pixmap[10];
+-  Pixmap dbutton_pixmap_mask[10];
+   int button_width[10];
+   int button_height[10];
+ 

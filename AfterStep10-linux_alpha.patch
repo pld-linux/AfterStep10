@@ -1,0 +1,95 @@
+--- ./modules/Audio/Imakefile.xi	Sat Jun 28 18:42:08 1997
++++ ./modules/Audio/Imakefile	Sat Jun 28 18:42:23 1997
+@@ -29,11 +29,7 @@
+ 
+ DEPLIBS = $(DEPXLIB)  ../../lib/libafterstep.a
+ 
+-#ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = -ldnet_stub -L../../lib -lafterstep
+-#else
+ LOCAL_LIBRARIES = -L../../lib -lafterstep
+-#endif
+ 
+ LINTLIBS = $(LINTXLIB)
+ 
+--- ./modules/Auto/Imakefile.xi	Sat Jun 28 18:42:32 1997
++++ ./modules/Auto/Imakefile	Sat Jun 28 18:42:39 1997
+@@ -7,11 +7,7 @@
+ 
+ DEPLIBS = $(DEPXLIB)  ../../lib/libafterstep.a
+ 
+-#ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = -ldnet_stub -L../../lib -lafterstep  
+-#else
+ LOCAL_LIBRARIES = -L../../lib -lafterstep
+-#endif
+ 
+ LINTLIBS = $(LINTXLIB)
+ 
+--- ./modules/Wharf/Imakefile.xi	Sat Jun 28 18:43:13 1997
++++ ./modules/Wharf/Imakefile	Sat Jun 28 18:43:25 1997
+@@ -15,11 +15,7 @@
+ 
+ DEPLIBS = $(DEPXLIB)  ../../lib/libafterstep.a   
+ 
+-#ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -ldnet_stub -L../../lib -lafterstep     
+-#else
+ LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -L../../lib -lafterstep
+-#endif
+ 
+ EXTRA_INCLUDES = -I.
+ 
+--- ./modules/Banner/Imakefile.xi	Sat Jun 28 18:42:47 1997
++++ ./modules/Banner/Imakefile	Sat Jun 28 18:42:56 1997
+@@ -15,11 +15,7 @@
+ 
+ DEPLIBS = $(DEPXLIB) 
+ 
+-#ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -ldnet_stub -L../../lib -lafterstep  
+-#else
+ LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -L../../lib -lafterstep  
+-#endif
+ 
+ LINTLIBS = $(LINTXLIB)
+ 
+--- ./modules/Pager/Imakefile.xi	Sat Jun 28 18:43:02 1997
++++ ./modules/Pager/Imakefile	Sat Jun 28 18:43:09 1997
+@@ -13,11 +13,7 @@
+ 
+ DEPLIBS = $(DEPXLIB)  ../../lib/libafterstep.a   
+ 
+-#ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = $(XLIB) -ldnet_stub -L../../lib -lafterstep
+-#else
+ LOCAL_LIBRARIES = $(XLIB) -L../../lib -lafterstep
+-#endif
+ 
+ LINTLIBS = $(LINTXLIB)
+ 
+--- ./modules/Animate/Imakefile.xi	Sat Jun 28 18:41:44 1997
++++ ./modules/Animate/Imakefile	Sat Jun 28 18:41:54 1997
+@@ -4,11 +4,7 @@
+ 
+ DEPLIBS = $(DEPXLIB)  ../../lib/libafterstep.a   
+ 
+-#ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -ldnet_stub -L../../lib -lafterstep     
+-#else
+ LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -L../../lib -lafterstep -lm
+-#endif
+ 
+ LINTLIBS = $(LINTXLIB)
+ 
+--- ./afterstep/Imakefile.xi	Sat Jun 28 19:05:57 1997
++++ ./afterstep/Imakefile	Sat Jun 28 19:07:54 1997
+@@ -16,7 +16,7 @@
+ DEPLIBS = $(DEPXLIB) ../lib/libafterstep.a
+ 
+ #ifdef AlphaArchitecture
+-LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -ldnet_stub -lm -L../lib -lafterstep
++LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -lm -L../lib -lafterstep
+ #else 
+ #ifdef HPArchitecture
+ LOCAL_LIBRARIES = $(XPMLIB) $(XLIB) -lV3 -L../lib -lafterstep

@@ -67,14 +67,12 @@ install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/X11/%{afterstep}.rc
 install icons/*.xpm $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/pixmaps
 install backgrounds/* $RPM_BUILD_ROOT%{_datadir}/%{afterstep}/backgrounds
 
-gzip -9nf CHANGES CREDITS FAQ README README.8bit module-interface.txt
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%doc *.gz
+%doc CHANGES CREDITS FAQ README README.8bit module-interface.txt
 %config %{_sysconfdir}/X11/%{afterstep}.rc
 %attr(755,root,root) %{_bindir}/*
 %{_mandir}/man1/*

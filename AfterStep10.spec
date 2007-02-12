@@ -1,5 +1,5 @@
 Summary:	Old version of AfterStep Window Manager (NeXTalike)
-Summary(pl):	Stara wersja zarz±dcy okien AfterStep
+Summary(pl.UTF-8):   Stara wersja zarzÄ…dcy okien AfterStep
 Name:		AfterStep10
 Version:	1.0
 Release:	1
@@ -26,11 +26,11 @@ clone.
 
 This version includes Rob Malda's cool3.diff
 
-%description -l pl
-To jest stara wersja 1.0 zarz±dcy okien AfterStep. AfterStep jest
-kontynuacj± BowMan WM. U¿ywa zmodyfikowanego kodu FVWM aby dostarczyæ
+%description -l pl.UTF-8
+To jest stara wersja 1.0 zarzÄ…dcy okien AfterStep. AfterStep jest
+kontynuacjÄ… BowMan WM. UÅ¼ywa zmodyfikowanego kodu FVWM aby dostarczyÄ‡
 Ci odczucia podobne do NeXTStepa pod X Window System. To nie wszystko.
-AfterStep mo¿e byæ rozszerzony, aby byæ czym¶ wiêcej ni¿ prostym
+AfterStep moÅ¼e byÄ‡ rozszerzony, aby byÄ‡ czymÅ› wiÄ™cej niÅ¼ prostym
 klonem NeXTStepa.
 
 Ta wersja zawiera cool3.diff Roba Maldy.

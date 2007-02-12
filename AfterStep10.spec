@@ -1,5 +1,5 @@
 Summary:	Old version of AfterStep Window Manager (NeXTalike)
-Summary(pl.UTF-8):   Stara wersja zarządcy okien AfterStep
+Summary(pl.UTF-8):	Stara wersja zarządcy okien AfterStep
 Name:		AfterStep10
 Version:	1.0
 Release:	1

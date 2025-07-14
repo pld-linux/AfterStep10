@@ -38,10 +38,10 @@ Ta wersja zawiera cool3.diff Roba Maldy.
 %prep
 %setup -q -n AfterStep-%{version}
 %ifos Linux
-%patch0
+%patch -P0
 %endif
-%patch1 -R -p5
-%patch2 -p1
+%patch -P1 -R -p5
+%patch -P2 -p1
 
 %build
 ./MakeMakefiles
